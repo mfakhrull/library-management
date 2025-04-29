@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sport Management",
-  description: "Sport Management Application",
+  title: "Library Management",
+  description: "Library Management Application",
 };
 
 export default function RootLayout({

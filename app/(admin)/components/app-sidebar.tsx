@@ -13,7 +13,10 @@ import {
   BookOpen,
   ClipboardList,
   AlertCircle,
-  Loader2
+  Loader2,
+  BookCopy,
+  Folder,
+  UserRound
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -50,25 +53,48 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
         isActive: pathname === "/admin/dashboard"
       },
       {
-        title: "Manage Books",
-        url: `/admin/books`,
+        title: "Library Management",
         icon: BookOpen,
-        isActive: pathname.startsWith("/admin/books")
+        isActive: pathname.includes("/admin/books") || 
+                 pathname.includes("/admin/categories") || 
+                 pathname.includes("/admin/authors") ||
+                 pathname === "/admin/add-book",
+        items: [
+          {
+            title: "Books",
+            url: `/admin/books`,
+          },
+          {
+            title: "Categories",
+            url: `/admin/categories`,
+          },
+          {
+            title: "Authors",
+            url: `/admin/authors`,
+          },
+          {
+            title: "Add New Book",
+            url: `/admin/add-book`,
+          }
+        ]
       },
       {
-        title: "Add New Book",
-        url: `/admin/add-book`,
-        icon: BookPlus,
-        isActive: pathname.startsWith("/admin/add-book")
-      },
-      {
-        title: "Manage Loans",
-        url: `/admin/loans`,
+        title: "Loan Management",
         icon: ClipboardList,
-        isActive: pathname.startsWith("/admin/loans")
+        isActive: pathname.includes("/admin/loans") || pathname.includes("/admin/overdue"),
+        items: [
+          {
+            title: "Active Loans",
+            url: `/admin/loans`,
+          },
+          {
+            title: "Overdue Items",
+            url: `/admin/overdue`,
+          }
+        ]
       },
       {
-        title: "Manage Users",
+        title: "User Management",
         url: `/admin/users`,
         icon: Users,
         isActive: pathname.startsWith("/admin/users")
@@ -80,22 +106,19 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
         isActive: pathname.startsWith("/admin/reports")
       },
       {
-        title: "Overdue Items",
-        url: `/admin/overdue`,
-        icon: AlertCircle,
-        isActive: pathname.startsWith("/admin/overdue")
-      },
-      {
-        title: "Database",
-        url: `/admin/database`,
+        title: "System",
         icon: Database,
-        isActive: pathname.startsWith("/admin/database")
-      },
-      {
-        title: "Settings",
-        url: `/admin/settings`,
-        icon: Settings,
-        isActive: pathname.startsWith("/admin/settings")
+        isActive: pathname.includes("/admin/database") || pathname.includes("/admin/settings"),
+        items: [
+          {
+            title: "Database",
+            url: `/admin/database`,
+          },
+          {
+            title: "Settings",
+            url: `/admin/settings`,
+          }
+        ]
       }
     ];
 
@@ -123,7 +146,7 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <div className="flex h-14 items-center px-4">
-          <Library className="h-5 w-5 text-primary mr-2" />
+          <Library className="h-5 w-5 text-primary mr-2 shrink-0" />
           <span className="font-semibold truncate group-data-[collapsible=icon]:hidden">Admin Portal</span>
         </div>
       </SidebarHeader>
