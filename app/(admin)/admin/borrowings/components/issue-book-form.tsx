@@ -69,9 +69,8 @@ export function IssueBookForm({ onSuccess, onCancel }: IssueBookFormProps) {
         if (!booksResponse.ok) throw new Error("Failed to fetch books");
         const booksData = await booksResponse.json();
         
-        // Filter to only show books with available copies
-        const availableBooks = booksData.books.filter((book: any) => book.copiesAvailable > 0);
-        setBooks(availableBooks);
+        // Set all books including those with zero copies
+        setBooks(booksData.books);
 
         // Fetch users (non-admin)
         const usersResponse = await fetch("/api/users/get");
@@ -142,8 +141,15 @@ export function IssueBookForm({ onSuccess, onCancel }: IssueBookFormProps) {
                     </SelectItem>
                   ) : (
                     books.map((book) => (
-                      <SelectItem key={book._id} value={book._id}>
-                        {book.title} ({book.copiesAvailable} available)
+                      <SelectItem 
+                        key={book._id} 
+                        value={book._id}
+                        disabled={book.copiesAvailable <= 0}
+                      >
+                        {book.title} 
+                        {book.copiesAvailable <= 0 
+                          ? " (No copies available)" 
+                          : ` (${book.copiesAvailable} available)`}
                       </SelectItem>
                     ))
                   )}

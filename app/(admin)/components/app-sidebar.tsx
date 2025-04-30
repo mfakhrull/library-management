@@ -16,7 +16,8 @@ import {
   Loader2,
   BookCopy,
   Folder,
-  UserRound
+  UserRound,
+  DollarSign
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -83,6 +84,12 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
         url: `/admin/borrowings`,
         icon: ClipboardList,
         isActive: pathname.startsWith("/admin/borrowings")
+      },
+      {
+        title: "Fine Management",
+        url: `/admin/fines`,
+        icon: DollarSign,
+        isActive: pathname.startsWith("/admin/fines")
       },
       {
         title: "User Management",

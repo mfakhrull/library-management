@@ -4,6 +4,8 @@ import './Author';
 import './Category';
 import './Book';
 import './Borrowing';
+import './FineSettings';
+import './FinePayment';
 
 // Export a dummy function to ensure this file is executed
 export function registerModels() {

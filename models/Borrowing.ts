@@ -1,4 +1,5 @@
 import mongoose, { Schema, model } from "mongoose";
+import { calculateFineAmount } from "@/lib/fine-calculator";
 
 export interface BorrowingDocument {
   _id: string;
@@ -8,6 +9,7 @@ export interface BorrowingDocument {
   dueDate: Date;
   returnDate?: Date;
   fine: number;
+  fineStatus: "none" | "pending" | "partial" | "paid" | "waived";
   status: "borrowed" | "returned" | "overdue";
 }
 
@@ -40,6 +42,11 @@ const BorrowingSchema = new Schema<BorrowingDocument>(
       type: Number,
       default: 0,
     },
+    fineStatus: {
+      type: String,
+      enum: ["none", "pending", "partial", "paid", "waived"],
+      default: "none",
+    },
     status: {
       type: String,
       enum: ["borrowed", "returned", "overdue"],
@@ -55,22 +62,27 @@ const BorrowingSchema = new Schema<BorrowingDocument>(
 BorrowingSchema.index({ bookId: 1, status: 1 });
 BorrowingSchema.index({ userId: 1, status: 1 });
 BorrowingSchema.index({ dueDate: 1, status: 1 });
+BorrowingSchema.index({ fine: 1, fineStatus: 1 });
 
-// Static method to calculate fine for overdue books
-BorrowingSchema.statics.calculateFine = function(dueDate: Date, returnDate: Date = new Date()): number {
-  const FINE_RATE_PER_DAY = 1.00; // $1 per day
+// Auto-update status to 'overdue' if past due date and calculate fine
+BorrowingSchema.pre('save', async function(next) {
+  const now = new Date();
   
-  if (returnDate <= dueDate) return 0;
-  
-  const overdueDays = Math.ceil((returnDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
-  return overdueDays * FINE_RATE_PER_DAY;
-};
-
-// Auto-update status to 'overdue' if past due date
-BorrowingSchema.pre('save', function(next) {
-  if (this.status === 'borrowed' && this.dueDate < new Date() && !this.returnDate) {
+  // Update status to overdue if applicable
+  if (this.status === 'borrowed' && this.dueDate < now && !this.returnDate) {
     this.status = 'overdue';
+    
+    // Calculate and update the fine amount using the centralized utility
+    try {
+      this.fine = await calculateFineAmount(this.dueDate, now);
+      if (this.fine > 0 && this.fineStatus === 'none') {
+        this.fineStatus = 'pending';
+      }
+    } catch (error) {
+      console.error('Error calculating fine:', error);
+    }
   }
+  
   next();
 });
 

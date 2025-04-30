@@ -61,22 +61,56 @@ export function ReturnBookDialog({
 }: ReturnBookDialogProps) {
   const [loading, setLoading] = React.useState(false);
   const [estimatedFine, setEstimatedFine] = React.useState(0);
+  const [fineSettings, setFineSettings] = React.useState({
+    ratePerDay: 1.00,
+    gracePeriod: 0,
+    maxFinePerBook: 50.00
+  });
+  const [isLoadingSettings, setIsLoadingSettings] = React.useState(true);
 
-  // Calculate estimated fine when borrowing changes
+  // Fetch fine settings
   React.useEffect(() => {
-    if (borrowing) {
+    const fetchFineSettings = async () => {
+      try {
+        const response = await fetch('/api/fines/settings');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.settings) {
+            setFineSettings({
+              ratePerDay: data.settings.ratePerDay,
+              gracePeriod: data.settings.gracePeriod,
+              maxFinePerBook: data.settings.maxFinePerBook
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching fine settings:", error);
+      } finally {
+        setIsLoadingSettings(false);
+      }
+    };
+
+    fetchFineSettings();
+  }, []);
+
+  // Calculate estimated fine when borrowing changes or settings are loaded
+  React.useEffect(() => {
+    if (borrowing && !isLoadingSettings) {
       const dueDate = new Date(borrowing.dueDate);
       const today = new Date();
       
       if (today > dueDate) {
         const daysLate = differenceInDays(today, dueDate);
-        // $1 per day late
-        setEstimatedFine(daysLate > 0 ? daysLate * 1.00 : 0);
+        const effectiveDaysLate = Math.max(0, daysLate - fineSettings.gracePeriod);
+        const calculatedFine = effectiveDaysLate * fineSettings.ratePerDay;
+        
+        // Apply maximum fine cap
+        setEstimatedFine(Math.min(calculatedFine, fineSettings.maxFinePerBook));
       } else {
         setEstimatedFine(0);
       }
     }
-  }, [borrowing]);
+  }, [borrowing, isLoadingSettings, fineSettings]);
 
   // Process the book return
   const handleReturn = async () => {
@@ -167,7 +201,7 @@ export function ReturnBookDialog({
                       <p className="font-medium text-destructive">Overdue Notice</p>
                       <p className="text-sm">
                         This book is {differenceInDays(new Date(), new Date(borrowing.dueDate))} days overdue.
-                        An estimated fine of ${estimatedFine.toFixed(2)} will be applied.
+                        An estimated fine of RM{estimatedFine.toFixed(2)} will be applied.
                       </p>
                     </div>
                   </div>

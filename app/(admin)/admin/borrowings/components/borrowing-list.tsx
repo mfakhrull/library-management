@@ -332,10 +332,10 @@ export function BorrowingList() {
                       <TableCell>
                         {borrowing.fine > 0 ? (
                           <span className="text-destructive font-medium">
-                            ${borrowing.fine.toFixed(2)}
+                            RM{borrowing.fine.toFixed(2)}
                           </span>
                         ) : (
-                          <span>$0.00</span>
+                          <span>RM0.00</span>
                         )}
                       </TableCell>
                       <TableCell>
