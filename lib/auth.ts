@@ -23,6 +23,11 @@ export const authOptions: NextAuthOptions = {
 
         if (!user) throw new Error("Wrong Email");
 
+        // Check if user is suspended
+        if (user.status === "Suspended") {
+          throw new Error("Account suspended. Please contact the administrator.");
+        }
+
         const passwordMatch = await bcrypt.compare(
           credentials!.password,
           user.password
@@ -42,6 +47,7 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
         token.userId = user.userId;
         token._id = user._id;
+        token.status = user.status;
       }
       return token;
     },
@@ -50,6 +56,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).role = token.role;
         (session.user as any).userId = token.userId;
         (session.user as any)._id = token._id;
+        (session.user as any).status = token.status;
       }
       return session;
     },

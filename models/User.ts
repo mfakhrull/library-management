@@ -8,6 +8,7 @@ export interface UserDocument {
     name: string;
     contact: string;
     role: "Admin" | "Student" | "Lecturer";
+    status: "Active" | "Suspended";
 }
 
 const UserSchema = new Schema<UserDocument>(
@@ -40,6 +41,11 @@ const UserSchema = new Schema<UserDocument>(
       type: String,
       enum: ["Admin", "Student", "Lecturer"],
       default: "Student",
+    },
+    status: {
+      type: String,
+      enum: ["Active", "Suspended"],
+      default: "Active",
     },
   },
   {

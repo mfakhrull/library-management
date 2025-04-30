@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     await connectDB();
     
     const body = await request.json();
-    const { userId, email, password, name, contact, role } = body;
+     const { userId, email, password, name, contact, role, status } = body;
     
     // Check if user already exists
     const existingUserByEmail = await User.findOne({ email });
@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
       name,
       contact,
       role,
+      status: status || "Active", // Default to Active if not provided
     });
     
     // Remove password from response

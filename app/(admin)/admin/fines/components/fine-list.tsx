@@ -55,7 +55,9 @@ import {
   BadgeCheck,
   MoreHorizontal,
   RefreshCw,
-  FileText
+  FileText,
+  HandCoins,
+  BanknoteArrowDown
 } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
 import { Label } from "@/components/ui/label";
@@ -399,7 +401,7 @@ export function FineList() {
                             setIsPaymentDialogOpen(true);
                           }}
                         >
-                          <DollarSign className="mr-1 h-4 w-4" />
+                          <BanknoteArrowDown className="mr-1 h-4 w-4" />
                           Process Payment
                         </Button>
                       </TableCell>
@@ -505,7 +507,7 @@ export function FineList() {
                         <TableCell>
                           {fine.paymentMethod === "cash" && (
                             <span className="flex items-center">
-                              <DollarSign className="mr-1 h-4 w-4" />
+                              <HandCoins className="mr-1 h-4 w-4" />
                               Cash
                             </span>
                           )}
@@ -630,7 +632,7 @@ export function FineList() {
                     step="0.01"
                     min="0"
                     max={selectedBorrowing?.fine}
-                    className="pl-7"
+                    className="pl-10"
                     placeholder="0.00"
                     value={paymentAmount}
                     onChange={(e) => setPaymentAmount(e.target.value)}

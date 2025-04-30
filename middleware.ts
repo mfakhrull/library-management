@@ -3,10 +3,16 @@ import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
+  // Bypass middleware for static assets or Next.js internals
+  const pathname = request.nextUrl.pathname;
+  if (pathname.startsWith('/_next') || pathname.startsWith('/static') || pathname.includes('.')) {
+    return NextResponse.next();
+  }
+
   const token = await getToken({ req: request });
-  const isAuthRoute = request.nextUrl.pathname.startsWith("/login") || 
-                      request.nextUrl.pathname.startsWith("/register");
-  const isApiRoute = request.nextUrl.pathname.startsWith("/api");
+  const isAuthRoute = pathname.startsWith("/login") || 
+                      pathname.startsWith("/register");
+  const isApiRoute = pathname.startsWith("/api");
   
   // If trying to access auth pages while logged in, redirect based on role
   if (isAuthRoute && token) {
@@ -37,7 +43,13 @@ export async function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Match all routes except for public assets and API routes
+// Only apply middleware to application pages/routes (static assets bypass)
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/auth).*)"],
+  matcher: [
+    '/',
+    '/dashboard/:path*',
+    '/admin/:path*',
+    '/login',
+    '/register'
+  ]
 };

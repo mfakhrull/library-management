@@ -9,6 +9,7 @@ import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
 
 const registerSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -32,6 +33,7 @@ const generateUserId = (name: string): string => {
 export function RegisterForm() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [showAdminUnlock, setShowAdminUnlock] = useState(false)
 
   const {
     register,
@@ -156,17 +158,44 @@ export function RegisterForm() {
           <select
             id="role"
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={isLoading}
             {...register("role")}
+            onChange={e => setShowAdminUnlock(e.target.value === "Admin")}
           >
             <option value="Student">Student</option>
             <option value="Lecturer">Lecturer</option>
-            <option value="Admin">Admin</option>
+            <option value="Admin" disabled>Admin</option>
           </select>
           {errors.role && (
             <p className="text-xs text-red-500">{errors.role.message}</p>
           )}
         </div>
+        <div className="flex items-center gap-2 mb-2">
+          <Switch id="show-admin-unlock" checked={showAdminUnlock} onCheckedChange={setShowAdminUnlock} />
+          <label htmlFor="show-admin-unlock" className="text-sm">Show Admin Unlock Code</label>
+        </div>
+        {showAdminUnlock && (
+          <div className="flex flex-col gap-2">
+            <label htmlFor="adminPassword" className="text-sm font-medium">
+              Admin Unlock Code (only needed for Admin role)
+            </label>
+            <Input
+              id="adminPassword"
+              type="password"
+              placeholder="Required only for Admin role"
+              disabled={isLoading}
+              onChange={(e) => {
+                // Update the Admin option based on password
+                const selectElement = document.getElementById("role") as HTMLSelectElement;
+                if (selectElement) {
+                  const adminOption = selectElement.querySelector('option[value="Admin"]');
+                  if (adminOption) {
+                    (adminOption as HTMLOptionElement).disabled = e.target.value !== "0000";
+                  }
+                }
+              }}
+            />
+          </div>
+        )}
         <Button type="submit" className="mt-2" disabled={isLoading}>
           {isLoading ? "Creating account..." : "Create account"}
         </Button>

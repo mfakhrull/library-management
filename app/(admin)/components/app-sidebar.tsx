@@ -17,7 +17,8 @@ import {
   BookCopy,
   Folder,
   UserRound,
-  DollarSign
+  DollarSign,
+  ClockAlert
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -88,7 +89,7 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
       {
         title: "Fine Management",
         url: `/admin/fines`,
-        icon: DollarSign,
+        icon: ClockAlert,
         isActive: pathname.startsWith("/admin/fines")
       },
       {
