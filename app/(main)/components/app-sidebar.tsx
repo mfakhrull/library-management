@@ -13,7 +13,8 @@ import {
   Settings,
   User,
   Loader2,
-  ClipboardList
+  ClipboardList,
+  Bookmark
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -66,6 +67,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         url: `/borrowings`,
         icon: ClipboardList,
         isActive: pathname.startsWith("/borrowings")
+      },
+      {
+        title: "My Reservations",
+        url: `/reservations`,
+        icon: Bookmark,
+        isActive: pathname.startsWith("/reservations")
       },
       {
         title: "Profile",
