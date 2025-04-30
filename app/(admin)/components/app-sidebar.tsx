@@ -79,19 +79,10 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
         ]
       },
       {
-        title: "Loan Management",
+        title: "Borrowing System",
+        url: `/admin/borrowings`,
         icon: ClipboardList,
-        isActive: pathname.includes("/admin/loans") || pathname.includes("/admin/overdue"),
-        items: [
-          {
-            title: "Active Loans",
-            url: `/admin/loans`,
-          },
-          {
-            title: "Overdue Items",
-            url: `/admin/overdue`,
-          }
-        ]
+        isActive: pathname.startsWith("/admin/borrowings")
       },
       {
         title: "User Management",

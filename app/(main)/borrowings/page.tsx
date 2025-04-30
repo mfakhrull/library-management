@@ -37,7 +37,7 @@ interface Borrowing {
   status: "borrowed" | "returned" | "overdue";
 }
 
-export default function MemberDashboard() {
+export default function MyBorrowingsPage() {
   const { data: session, status } = useSession();
   const [borrowings, setBorrowings] = React.useState<Borrowing[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -135,7 +135,7 @@ export default function MemberDashboard() {
   if (loading) {
     return (
       <div className="flex flex-col gap-6 p-6">
-        <h1 className="text-3xl font-bold tracking-tight">My Dashboard</h1>
+        <h1 className="text-3xl font-bold tracking-tight">My Borrowings</h1>
         <div className="mt-6">
           <Skeleton className="h-36 w-full" />
           <div className="mt-4">
@@ -150,12 +150,12 @@ export default function MemberDashboard() {
   if (error) {
     return (
       <div className="flex flex-col gap-6 p-6">
-        <h1 className="text-3xl font-bold tracking-tight">My Dashboard</h1>
+        <h1 className="text-3xl font-bold tracking-tight">My Borrowings</h1>
         <Card className="bg-destructive/10 border-destructive">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center text-destructive">
               <AlertTriangle className="mr-2 h-5 w-5" />
-              Error Loading Dashboard
+              Error Loading Borrowings
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -172,9 +172,9 @@ export default function MemberDashboard() {
   return (
     <div className="flex flex-col gap-6 p-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">My Dashboard</h1>
+        <h1 className="text-3xl font-bold tracking-tight">My Borrowings</h1>
         <p className="text-muted-foreground">
-          View your library account, current books, and borrowing history
+          View your current books, due dates, and borrowing history
         </p>
       </div>
       

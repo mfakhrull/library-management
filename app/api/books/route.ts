@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
+import mongoose from "mongoose";
+
+// Import the model registry to ensure all models are registered
+import "@/models/index";
+
+// Import models after registration
 import Book from "@/models/Book";
-import Author from "@/models/Author"; // <-- Add this line
-import Category from "@/models/Category"; // <-- Add this line
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,6 +27,9 @@ export async function GET(request: NextRequest) {
     if (category) {
       filter.categoryId = category;
     }
+    
+    // Make sure models are properly registered
+    console.log("Available models:", Object.keys(mongoose.models));
     
     // Execute query with pagination
     const totalBooks = await Book.countDocuments(filter);

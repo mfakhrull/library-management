@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
-import Book from "@/models/Book";
-import Author from "@/models/Author";
-import Category from "@/models/Category";
-
 import mongoose from "mongoose";
+
+// Import the model registry to ensure all models are registered
+import "@/models/index";
+
+// Import models after registration
+import Book from "@/models/Book";
 
 export async function GET(
   request: NextRequest,

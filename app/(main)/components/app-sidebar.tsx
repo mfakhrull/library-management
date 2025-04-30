@@ -12,7 +12,8 @@ import {
   Search,
   Settings,
   User,
-  Loader2
+  Loader2,
+  ClipboardList
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -52,7 +53,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         title: "Browse Books",
         url: `/books`,
         icon: BookOpen,
-        isActive: pathname.startsWith("/books")
+        isActive: pathname.startsWith("/books") && !pathname.includes("/borrowed")
       },
       {
         title: "Search Catalog",
@@ -61,22 +62,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         isActive: pathname.startsWith("/search")
       },
       {
-        title: "Currently Borrowed",
-        url: `/borrowed`,
-        icon: Clock,
-        isActive: pathname.startsWith("/borrowed")
-      },
-      {
-        title: "Reservations",
-        url: `/reservations`,
-        icon: Calendar,
-        isActive: pathname.startsWith("/reservations")
-      },
-      {
-        title: "Borrowing History",
-        url: `/history`,
-        icon: History,
-        isActive: pathname.startsWith("/history")
+        title: "My Borrowings",
+        url: `/borrowings`,
+        icon: ClipboardList,
+        isActive: pathname.startsWith("/borrowings")
       },
       {
         title: "Profile",
