@@ -3,9 +3,10 @@ import { connectDB } from "@/lib/mongodb";
 import Borrowing from "@/models/Borrowing";
 import Book from "@/models/Book";
 import User from "@/models/User";
+import Reservation from "@/models/Reservation";
 import mongoose from "mongoose";
-import Author from "@/models/Author"; // <-- Add this line
-import Category from "@/models/Category"; // <-- Add this line
+import Author from "@/models/Author";
+import Category from "@/models/Category";
 
 // Get all borrowings with pagination and filtering
 export async function GET(request: NextRequest) {
@@ -107,6 +108,66 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Handle reservations if present
+    if (body.reservationId && body.fulfillReservation) {
+      // Check if reservation exists and is valid
+      const reservation = await Reservation.findById(body.reservationId);
+      
+      if (!reservation) {
+        return NextResponse.json(
+          { message: "Reservation not found" },
+          { status: 404 }
+        );
+      }
+
+      if (reservation.status !== "pending") {
+        return NextResponse.json(
+          { message: `Cannot fulfill a reservation with status: ${reservation.status}` },
+          { status: 400 }
+        );
+      }
+
+      if (reservation.bookId.toString() !== body.bookId || reservation.userId.toString() !== body.userId) {
+        return NextResponse.json(
+          { message: "Reservation details do not match the borrowing request" },
+          { status: 400 }
+        );
+      }
+
+      // Update reservation to fulfilled
+      reservation.status = "fulfilled";
+      await reservation.save();
+    } else {
+      // If not fulfilling a specific reservation, check if there are pending reservations for this book
+      const pendingReservations = await Reservation.find({
+        bookId: body.bookId,
+        status: "pending"
+      }).sort({ reservationDate: 1 });  // Sort by oldest first
+
+      // If there are pending reservations and the first one is not for this user, warn about priority
+      if (pendingReservations.length > 0 && 
+          pendingReservations[0].userId.toString() !== body.userId && 
+          !body.ignoreReservationWarning) {
+            
+        // If explicitly ignoring reservations, log but continue
+        if (body.handleReservation === "ignore") {
+          console.log(`Admin is issuing book ${body.bookId} to user ${body.userId} despite existing reservation for user ${pendingReservations[0].userId}`);
+        } else {
+          return NextResponse.json(
+            { 
+              message: "This book has pending reservations. The first reservation is for a different user.",
+              reservationDetails: {
+                reservationId: pendingReservations[0]._id,
+                userId: pendingReservations[0].userId
+              },
+              needsConfirmation: true
+            },
+            { status: 409 }  // Conflict status code
+          );
+        }
+      }
+    }
     
     // Set due date if not provided (default 14 days from now)
     if (!body.dueDate) {
@@ -115,8 +176,14 @@ export async function POST(request: NextRequest) {
       body.dueDate = dueDate;
     }
     
-    // Create borrowing record
-    const newBorrowing = await Borrowing.create(body);
+    // Create borrowing record - remove any reservation fields not needed in borrowing
+    const borrowingData = { ...body };
+    delete borrowingData.reservationId;
+    delete borrowingData.fulfillReservation;
+    delete borrowingData.handleReservation;
+    delete borrowingData.ignoreReservationWarning;
+    
+    const newBorrowing = await Borrowing.create(borrowingData);
     
     // Update book available copies
     book.copiesAvailable -= 1;

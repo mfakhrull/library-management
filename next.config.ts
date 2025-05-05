@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ['marketplace.canva.com'],
+    domains: ['marketplace.canva.com', 'template.canva.com'],
   },
 };
 

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserList from "./components/user-list";
@@ -26,9 +25,7 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 md:p-8">
-      <Breadcrumbs items={["Admin", "User Management"]} />
-      
+    <div className="flex flex-col gap-4 p-4 md:p-8">      
       <Card className="border-none shadow-none">
         <CardHeader className="pb-3">
           <CardTitle className="text-2xl">User Management</CardTitle>

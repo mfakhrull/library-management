@@ -90,9 +90,9 @@ export async function PUT(
     // Calculate fine if returned after due date
     let fine = 0;
     if (returnDate > borrowing.dueDate) {
-      // Use the static method from the model
+      // Use the static method from the model and await it
       // @ts-ignore
-      fine = Borrowing.calculateFine(borrowing.dueDate, returnDate);
+      fine = await (Borrowing as any).calculateFine(borrowing.dueDate, returnDate);
     }
 
     // Update the borrowing record

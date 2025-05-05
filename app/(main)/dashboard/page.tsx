@@ -271,7 +271,7 @@ export default function MemberDashboard() {
                       
                       {borrowing.status === "overdue" && (
                         <span className="text-destructive text-sm font-medium">
-                          Estimated fine: ${(differenceInDays(new Date(), new Date(borrowing.dueDate)) * 1.0).toFixed(2)}
+                          Estimated fine: RM {(differenceInDays(new Date(), new Date(borrowing.dueDate)) * 1.0).toFixed(2)}
                         </span>
                       )}
                     </div>
@@ -327,7 +327,7 @@ export default function MemberDashboard() {
                       
                       {borrowing.fine > 0 && (
                         <span className="text-destructive text-sm font-medium">
-                          Fine paid: ${borrowing.fine.toFixed(2)}
+                          Fine paid: RM{borrowing.fine.toFixed(2)}
                         </span>
                       )}
                     </div>

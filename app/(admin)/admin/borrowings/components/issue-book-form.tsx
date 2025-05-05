@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { format, addDays } from "date-fns";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2, Bookmark, AlertCircle, Info } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +30,8 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 // Form schema for issuing a book
 const formSchema = z.object({
@@ -38,6 +40,7 @@ const formSchema = z.object({
   dueDate: z.date({
     required_error: "Due date is required",
   }),
+  handleReservation: z.enum(["fulfill", "ignore"]).optional(),
 });
 
 interface IssueBookFormProps {
@@ -49,6 +52,11 @@ export function IssueBookForm({ onSuccess, onCancel }: IssueBookFormProps) {
   const [loading, setLoading] = React.useState(false);
   const [books, setBooks] = React.useState<any[]>([]);
   const [users, setUsers] = React.useState<any[]>([]);
+  const [pendingReservations, setPendingReservations] = React.useState<any[]>([]);
+  const [selectedBookReservations, setSelectedBookReservations] = React.useState<any[]>([]);
+  const [checkingReservations, setCheckingReservations] = React.useState(false);
+  const [selectedUser, setSelectedUser] = React.useState<string | null>(null);
+  const [isReservationMatch, setIsReservationMatch] = React.useState(false);
 
   // Initialize form
   const form = useForm<z.infer<typeof formSchema>>({
@@ -57,8 +65,13 @@ export function IssueBookForm({ onSuccess, onCancel }: IssueBookFormProps) {
       bookId: "",
       userId: "",
       dueDate: addDays(new Date(), 14), // Default due date is 14 days from today
+      handleReservation: "fulfill",
     },
   });
+
+  // Watch for book and user selection changes
+  const watchBookId = form.watch("bookId");
+  const watchUserId = form.watch("userId");
 
   // Fetch books and users data
   React.useEffect(() => {
@@ -80,6 +93,13 @@ export function IssueBookForm({ onSuccess, onCancel }: IssueBookFormProps) {
         // Filter to only show non-admin users
         const members = usersData.filter((user: any) => user.role !== "Admin");
         setUsers(members);
+
+        // Fetch all pending reservations
+        const reservationsResponse = await fetch("/api/reservations?status=pending");
+        if (reservationsResponse.ok) {
+          const reservationsData = await reservationsResponse.json();
+          setPendingReservations(reservationsData.reservations || []);
+        }
       } catch (error) {
         console.error("Error fetching form data:", error);
         toast.error("Failed to load books and members data");
@@ -89,19 +109,64 @@ export function IssueBookForm({ onSuccess, onCancel }: IssueBookFormProps) {
     fetchData();
   }, []);
 
+  // Check for reservations when book selection changes
+  React.useEffect(() => {
+    if (watchBookId) {
+      setCheckingReservations(true);
+      const bookReservations = pendingReservations.filter(
+        (res) => res.bookId?._id === watchBookId
+      );
+      
+      setSelectedBookReservations(bookReservations);
+      setCheckingReservations(false);
+      
+      // Check if selected user matches any reservation
+      if (watchUserId && bookReservations.length > 0) {
+        const matchingReservation = bookReservations.find(
+          (res) => res.userId?._id === watchUserId
+        );
+        
+        setIsReservationMatch(!!matchingReservation);
+        
+        if (matchingReservation) {
+          form.setValue("handleReservation", "fulfill");
+        }
+      } else {
+        setIsReservationMatch(false);
+      }
+    } else {
+      setSelectedBookReservations([]);
+      setIsReservationMatch(false);
+    }
+  }, [watchBookId, watchUserId, pendingReservations, form]);
+
   // Handle form submission
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
     try {
+      // Check if there's a matching reservation that should be fulfilled
+      const matchingReservation = selectedBookReservations.find(
+        (res) => res.userId?._id === values.userId
+      );
+      
+      // Include reservation information in the request if it exists and should be fulfilled
+      const requestBody: any = {
+        ...values,
+        issueDate: new Date(), // Set issue date to current date
+      };
+      
+      // Add reservation handling information if needed
+      if (matchingReservation && values.handleReservation === "fulfill") {
+        requestBody.reservationId = matchingReservation._id;
+        requestBody.fulfillReservation = true;
+      }
+
       const response = await fetch("/api/borrowings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...values,
-          issueDate: new Date(), // Set issue date to current date
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -116,6 +181,12 @@ export function IssueBookForm({ onSuccess, onCancel }: IssueBookFormProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return format(date, "PPP");
   };
 
   return (
@@ -150,6 +221,7 @@ export function IssueBookForm({ onSuccess, onCancel }: IssueBookFormProps) {
                         {book.copiesAvailable <= 0 
                           ? " (No copies available)" 
                           : ` (${book.copiesAvailable} available)`}
+                        {pendingReservations.some(r => r.bookId?._id === book._id) && " 🔖"}
                       </SelectItem>
                     ))
                   )}
@@ -160,6 +232,27 @@ export function IssueBookForm({ onSuccess, onCancel }: IssueBookFormProps) {
           )}
         />
 
+        {/* Show reservation information for selected book */}
+        {selectedBookReservations.length > 0 && (
+          <Alert className="bg-blue-50 text-blue-800 border border-blue-200">
+            <Bookmark className="h-4 w-4 text-blue-500" />
+            <AlertTitle className="text-blue-800">
+              Reservation Alert
+            </AlertTitle>
+            <AlertDescription className="text-blue-700">
+              <p className="mb-2">
+                This book has {selectedBookReservations.length} active 
+                {selectedBookReservations.length === 1 ? " reservation" : " reservations"}. 
+                The first reservation was made by {selectedBookReservations[0].userId?.name} 
+                on {formatDate(selectedBookReservations[0].reservationDate)}.
+              </p>
+              <div className="text-xs text-blue-600 mt-1">
+                <strong>Note:</strong> If you select this member, the reservation will be fulfilled automatically.
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Member Selection */}
         <FormField
           control={form.control}
@@ -167,7 +260,13 @@ export function IssueBookForm({ onSuccess, onCancel }: IssueBookFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Member</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  setSelectedUser(value);
+                }}
+                defaultValue={field.value}
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a member" />
@@ -182,6 +281,7 @@ export function IssueBookForm({ onSuccess, onCancel }: IssueBookFormProps) {
                     users.map((user) => (
                       <SelectItem key={user._id} value={user._id}>
                         {user.name} ({user.userId})
+                        {selectedBookReservations.some(r => r.userId?._id === user._id) && " 🔖"}
                       </SelectItem>
                     ))
                   )}
@@ -191,6 +291,46 @@ export function IssueBookForm({ onSuccess, onCancel }: IssueBookFormProps) {
             </FormItem>
           )}
         />
+
+        {/* Reservation match alert */}
+        {isReservationMatch && (
+          <Alert className="bg-green-50 text-green-800 border border-green-200">
+            <Info className="h-4 w-4 text-green-500" />
+            <AlertTitle className="text-green-800">Reservation Match Found</AlertTitle>
+            <AlertDescription className="text-green-700">
+              This member has an active reservation for this book. The reservation will be fulfilled when you issue this book.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Reservation handling options - only show if there are reservations but selected user isn't the one with reservation */}
+        {selectedBookReservations.length > 0 && selectedUser && !isReservationMatch && (
+          <FormField
+            control={form.control}
+            name="handleReservation"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Reservation Handling</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="How to handle existing reservations" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="ignore">
+                      Issue to selected member (ignore reservations)
+                    </SelectItem>
+                    <SelectItem value="fulfill" disabled>
+                      Fulfill reservation (select the member with the reservation)
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         {/* Due Date */}
         <FormField

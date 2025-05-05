@@ -20,10 +20,48 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const page = parseInt(searchParams.get("page") || "1", 10);
     
-    // Build filter
+    // Build filter with validation to prevent ObjectId casting errors
     const filter: any = {};
-    if (userId) filter.userId = userId;
-    if (bookId) filter.bookId = bookId;
+    
+    // Only add userId to filter if it's a valid ObjectId
+    if (userId && userId !== "undefined" && userId !== "null") {
+      if (mongoose.Types.ObjectId.isValid(userId)) {
+        filter.userId = userId;
+      } else {
+        console.warn(`Invalid userId format received: ${userId}`);
+        // Return empty results for invalid IDs rather than throwing an error
+        return NextResponse.json({
+          reservations: [],
+          pagination: {
+            total: 0,
+            page,
+            limit,
+            pages: 0
+          }
+        });
+      }
+    }
+    
+    // Only add bookId to filter if it's a valid ObjectId
+    if (bookId && bookId !== "undefined" && bookId !== "null") {
+      if (mongoose.Types.ObjectId.isValid(bookId)) {
+        filter.bookId = bookId;
+      } else {
+        console.warn(`Invalid bookId format received: ${bookId}`);
+        // Return empty results for invalid IDs rather than throwing an error
+        return NextResponse.json({
+          reservations: [],
+          pagination: {
+            total: 0,
+            page,
+            limit,
+            pages: 0
+          }
+        });
+      }
+    }
+    
+    // Add status to filter if provided
     if (status) filter.status = status;
     
     // Auto-expire pending reservations that have passed their expiry date
@@ -74,6 +112,22 @@ export async function POST(request: NextRequest) {
     }
     
     const body = await request.json();
+    
+    // Validate userId is provided and valid
+    if (!body.userId || !mongoose.Types.ObjectId.isValid(body.userId)) {
+      return NextResponse.json(
+        { message: "Invalid or missing user ID" },
+        { status: 400 }
+      );
+    }
+    
+    // Validate bookId is provided and valid
+    if (!body.bookId || !mongoose.Types.ObjectId.isValid(body.bookId)) {
+      return NextResponse.json(
+        { message: "Invalid or missing book ID" },
+        { status: 400 }
+      );
+    }
     
     // Validate user exists
     const user = await User.findById(body.userId);

@@ -46,13 +46,5 @@ ReservationSchema.index({ bookId: 1, status: 1 });
 ReservationSchema.index({ userId: 1, status: 1 });
 ReservationSchema.index({ expiryDate: 1, status: 1 });
 
-// Auto-update status to 'expired' if past expiry date
-ReservationSchema.pre('find', function() {
-  this.where({
-    status: 'pending',
-    expiryDate: { $lt: new Date() }
-  }).updateMany({ status: 'expired' });
-});
-
 const Reservation = mongoose.models?.Reservation || model<ReservationDocument>("Reservation", ReservationSchema);
 export default Reservation;

@@ -18,7 +18,8 @@ import {
   Folder,
   UserRound,
   DollarSign,
-  ClockAlert
+  ClockAlert,
+  Bookmark
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -87,6 +88,12 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
         isActive: pathname.startsWith("/admin/borrowings")
       },
       {
+        title: "Reservations",
+        url: `/admin/reservations`,
+        icon: Bookmark,
+        isActive: pathname.startsWith("/admin/reservations")
+      },
+      {
         title: "Fine Management",
         url: `/admin/fines`,
         icon: ClockAlert,
@@ -98,27 +105,27 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
         icon: Users,
         isActive: pathname.startsWith("/admin/users")
       },
-      {
-        title: "Reports",
-        url: `/admin/reports`,
-        icon: BarChart3,
-        isActive: pathname.startsWith("/admin/reports")
-      },
-      {
-        title: "System",
-        icon: Database,
-        isActive: pathname.includes("/admin/database") || pathname.includes("/admin/settings"),
-        items: [
-          {
-            title: "Database",
-            url: `/admin/database`,
-          },
-          {
-            title: "Settings",
-            url: `/admin/settings`,
-          }
-        ]
-      }
+      // {
+      //   title: "Reports",
+      //   url: `/admin/reports`,
+      //   icon: BarChart3,
+      //   isActive: pathname.startsWith("/admin/reports")
+      // },
+      // {
+      //   title: "System",
+      //   icon: Database,
+      //   isActive: pathname.includes("/admin/database") || pathname.includes("/admin/settings"),
+      //   items: [
+      //     {
+      //       title: "Database",
+      //       url: `/admin/database`,
+      //     },
+      //     {
+      //       title: "Settings",
+      //       url: `/admin/settings`,
+      //     }
+      //   ]
+      // }
     ];
 
     return adminNavItems;

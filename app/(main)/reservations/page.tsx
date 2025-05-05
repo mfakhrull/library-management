@@ -34,11 +34,13 @@ export default function ReservationsPage() {
 
   // Fetch user's reservations
   const fetchReservations = async () => {
-    if (!session?.user?.id) return;
+    // Use the correct user ID property from the session
+    const userId = (session?.user as any)?._id;
+    if (!userId) return;
     
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/reservations?userId=${session.user.id}`);
+      const response = await fetch(`/api/reservations?userId=${userId}`);
       if (!response.ok) {
         throw new Error("Failed to fetch reservations");
       }
@@ -55,7 +57,9 @@ export default function ReservationsPage() {
 
   // Load reservations when session is available
   React.useEffect(() => {
-    if (status === "authenticated" && session?.user?.id) {
+    // Use the correct property to check for user authentication
+    const userId = (session?.user as any)?._id;
+    if (status === "authenticated" && userId) {
       fetchReservations();
     } else if (status === "unauthenticated") {
       router.push("/login");

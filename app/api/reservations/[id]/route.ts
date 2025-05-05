@@ -98,7 +98,7 @@ export async function PUT(
     }
 
     // Check if the user is the owner or an admin
-    if (session.user.role !== "Admin" && session.user.id !== reservation.userId.toString()) {
+    if (session.user.role !== "Admin" && session.user._id !== reservation.userId.toString()) {
       return NextResponse.json(
         { message: "Unauthorized. You can only manage your own reservations." },
         { status: 403 }

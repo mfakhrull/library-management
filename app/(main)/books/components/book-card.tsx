@@ -50,7 +50,15 @@ export function BookCard({ book }: BookCardProps) {
     
     setIsCheckingReservations(true);
     try {
-      const response = await fetch(`/api/reservations?userId=${session.user.id}&bookId=${book._id}&status=pending`);
+      // Make sure we're using the correct ID field from the session
+      const userId = (session.user as any)._id;
+      
+      if (!userId) {
+        console.error("User ID not found in session when checking reservations");
+        return;
+      }
+      
+      const response = await fetch(`/api/reservations?userId=${userId}&bookId=${book._id}&status=pending`);
       if (response.ok) {
         const data = await response.json();
         setCurrentReservations(data.reservations || []);
@@ -88,6 +96,13 @@ export function BookCard({ book }: BookCardProps) {
       // Default reservation period is 3 days from now
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + 3);
+      
+      // Make sure we're using the correct ID field from the session
+      const userId = (session.user as any)._id;
+      
+      if (!userId) {
+        throw new Error("User ID not found in session");
+      }
 
       const response = await fetch("/api/reservations", {
         method: "POST",
@@ -96,7 +111,7 @@ export function BookCard({ book }: BookCardProps) {
         },
         body: JSON.stringify({
           bookId: book._id,
-          userId: session.user.id,
+          userId: userId,
           expiryDate: expiryDate.toISOString(),
         }),
       });

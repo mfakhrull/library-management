@@ -45,7 +45,28 @@ export function LoginForm() {
       })
 
       if (response?.error) {
-        toast.error(response.error)
+        // Enhanced error handling with more user-friendly messages
+        if (response.error === "Wrong Email") {
+          toast.error("No account found with this email address", {
+            description: "Please check your email or sign up for a new account",
+            duration: 4000,
+          });
+        } else if (response.error === "Wrong Password") {
+          toast.error("Incorrect password", {
+            description: "Please check your password and try again",
+            duration: 4000,
+          });
+        } else if (response.error.includes("Account suspended")) {
+          toast.error("Account suspended", {
+            description: "Your account has been suspended. Please contact the administrator for assistance.",
+            duration: 5000,
+          });
+        } else {
+          toast.error("Login failed", {
+            description: response.error || "Please try again later",
+            duration: 4000,
+          });
+        }
         setIsLoading(false)
         return
       }
@@ -54,7 +75,10 @@ export function LoginForm() {
       toast.success("Logged in successfully")
     } catch (error) {
       console.error(error)
-      toast.error("Something went wrong. Please try again.")
+      toast.error("Authentication failed", {
+        description: "There was a problem with the authentication service. Please try again later.",
+        duration: 4000,
+      });
     } finally {
       setIsLoading(false)
     }

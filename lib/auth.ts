@@ -48,6 +48,7 @@ export const authOptions: NextAuthOptions = {
         token.userId = user.userId;
         token._id = user._id;
         token.status = user.status;
+        token.contact = user.contact;
       }
       return token;
     },
@@ -57,6 +58,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).userId = token.userId;
         (session.user as any)._id = token._id;
         (session.user as any).status = token.status;
+        (session.user as any).contact = token.contact;
       }
       return session;
     },

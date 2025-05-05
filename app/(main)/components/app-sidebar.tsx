@@ -56,12 +56,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: BookOpen,
         isActive: pathname.startsWith("/books") && !pathname.includes("/borrowed")
       },
-      {
-        title: "Search Catalog",
-        url: `/search`,
-        icon: Search,
-        isActive: pathname.startsWith("/search")
-      },
+      // {
+      //   title: "Search Catalog",
+      //   url: `/search`,
+      //   icon: Search,
+      //   isActive: pathname.startsWith("/search")
+      // },
       {
         title: "My Borrowings",
         url: `/borrowings`,
@@ -80,12 +80,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: User,
         isActive: pathname.startsWith("/profile")
       },
-      {
-        title: "Settings",
-        url: `/settings`,
-        icon: Settings,
-        isActive: pathname.startsWith("/settings")
-      }
+      // {
+      //   title: "Settings",
+      //   url: `/settings`,
+      //   icon: Settings,
+      //   isActive: pathname.startsWith("/settings")
+      // }
     ];
 
     return allNavItems;

@@ -87,4 +87,10 @@ BorrowingSchema.pre('save', async function(next) {
 });
 
 const Borrowing = mongoose.models?.Borrowing || model<BorrowingDocument>("Borrowing", BorrowingSchema);
+
+// Attach calculateFine static to the model directly (ensures availability on reloaded models)
+(Borrowing as any).calculateFine = async function (dueDate: Date, returnDate: Date) {
+  return await calculateFineAmount(dueDate, returnDate);
+};
+
 export default Borrowing;
