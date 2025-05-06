@@ -410,16 +410,86 @@ export function BookForm({ bookId, initialData }: BookFormProps = {}) {
               )}
             />
 
-            {/* Cover Image URL */}
+            {/* Cover Image */}
             <FormField
               control={form.control}
               name="coverImage"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cover Image URL (optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://example.com/image.jpg" {...field} />
-                  </FormControl>
+                  <FormLabel>Cover Image</FormLabel>
+                  <div className="space-y-4">
+                    {/* Image upload input */}
+                    <div className="flex flex-col space-y-2">
+                      <Input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setLoading(true);
+                            // Create form data for upload
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            
+                            try {
+                              // Upload to our cloudinary endpoint
+                              const response = await fetch('/api/upload', {
+                                method: 'POST',
+                                body: formData,
+                              });
+                              
+                              if (!response.ok) {
+                                throw new Error('Failed to upload image');
+                              }
+                              
+                              const data = await response.json();
+                              // Update form field with cloudinary URL
+                              field.onChange(data.secure_url);
+                              toast.success('Image uploaded successfully');
+                            } catch (error) {
+                              console.error('Error uploading image:', error);
+                              toast.error('Failed to upload image');
+                            } finally {
+                              setLoading(false);
+                            }
+                          }
+                        }}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Upload a book cover image or enter a URL below.
+                      </p>
+                    </div>
+                    
+                    {/* Manual URL input */}
+                    <div className="flex flex-col space-y-2">
+                      <FormControl>
+                        <Input 
+                          placeholder="Or enter image URL manually" 
+                          value={field.value || ''} 
+                          onChange={field.onChange}
+                        />
+                      </FormControl>
+                    </div>
+                    
+                    {/* Image preview */}
+                    {field.value && (
+                      <div className="mt-2">
+                        <p className="text-sm font-medium mb-2">Preview:</p>
+                        <div className="relative w-40 h-60 overflow-hidden rounded-md border border-input">
+                          <img 
+                            src={field.value} 
+                            alt="Cover preview" 
+                            className="object-cover w-full h-full"
+                            onError={(e) => {
+                              // Handle image load error
+                              e.currentTarget.src = '/placeholder-book.jpg';
+                              toast.error('Error loading image preview');
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}

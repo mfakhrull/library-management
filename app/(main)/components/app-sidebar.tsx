@@ -14,7 +14,9 @@ import {
   User,
   Loader2,
   ClipboardList,
-  Bookmark
+  Bookmark,
+  Folder,
+  FileUp
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -33,6 +35,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = React.useState(true);
+  const userRole = (session?.user as any)?.role || "Student";
 
   // Update loading state based on session status
   React.useEffect(() => {
@@ -43,7 +46,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   // Get navigation items based on user role
   const getNavItems = () => {
-    const allNavItems = [
+    const commonNavItems = [
       {
         title: "Dashboard",
         url: `/dashboard`,
@@ -56,12 +59,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: BookOpen,
         isActive: pathname.startsWith("/books") && !pathname.includes("/borrowed")
       },
-      // {
-      //   title: "Search Catalog",
-      //   url: `/search`,
-      //   icon: Search,
-      //   isActive: pathname.startsWith("/search")
-      // },
+      {
+        title: "Academic Resources",
+        url: `/academic-resources`,
+        icon: Folder,
+        isActive: pathname.startsWith("/academic-resources")
+      },
       {
         title: "My Borrowings",
         url: `/borrowings`,
@@ -80,15 +83,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: User,
         isActive: pathname.startsWith("/profile")
       },
-      // {
-      //   title: "Settings",
-      //   url: `/settings`,
-      //   icon: Settings,
-      //   isActive: pathname.startsWith("/settings")
-      // }
     ];
 
-    return allNavItems;
+    // For lecturers, add the ability to upload resources
+    if (userRole === "Lecturer") {
+      return commonNavItems.map(item => {
+        if (item.url === "/academic-resources") {
+          return {
+            ...item,
+            items: [
+              { title: "Browse Resources", url: "/academic-resources" },
+              { title: "Upload Resource", url: "/academic-resources/add" }
+            ]
+          };
+        }
+        return item;
+      });
+    }
+    
+    return commonNavItems;
   };
 
   const navData = {

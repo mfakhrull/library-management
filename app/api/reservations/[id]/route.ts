@@ -127,6 +127,15 @@ export async function PUT(
     // Handle fulfillment (admin only)
     if (body.status === "fulfilled" && session.user.role === "Admin") {
       reservation.status = "fulfilled";
+      
+      // Increase book available copies when the reservation is fulfilled
+      // This allows the book to be manually issued to the user afterward
+      const book = await Book.findById(reservation.bookId);
+      if (book) {
+        book.copiesAvailable += 1;
+        await book.save();
+      }
+      
       await reservation.save();
       
       return NextResponse.json({

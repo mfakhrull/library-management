@@ -82,6 +82,25 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
         ]
       },
       {
+        title: "Academic Resources",
+        icon: Folder,
+        isActive: pathname.includes("/admin/academic-resources"),
+        items: [
+          {
+            title: "Resources List",
+            url: `/admin/academic-resources/resources`,
+          },
+          {
+            title: "Add Resource",
+            url: `/admin/academic-resources/add`,
+          },
+          {
+            title: "Courses",
+            url: `/admin/academic-resources/courses`,
+          }
+        ]
+      },
+      {
         title: "Borrowing System",
         url: `/admin/borrowings`,
         icon: ClipboardList,

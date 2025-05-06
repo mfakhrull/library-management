@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get("userId");
     const bookId = searchParams.get("bookId");
     const status = searchParams.get("status");
+    const query = searchParams.get("query"); // <-- add this line
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const page = parseInt(searchParams.get("page") || "1", 10);
     
@@ -26,6 +27,40 @@ export async function GET(request: NextRequest) {
     if (userId) filter.userId = userId;
     if (bookId) filter.bookId = bookId;
     if (status) filter.status = status;
+
+    // If searching, find matching userIds and bookIds
+    let userIds: string[] = [];
+    let bookIds: string[] = [];
+    if (query) {
+      // Find users matching query
+      const users = await User.find({
+        $or: [
+          { name: { $regex: query, $options: "i" } },
+          { userId: { $regex: query, $options: "i" } },
+          { email: { $regex: query, $options: "i" } }
+        ]
+      }).select("_id");
+      userIds = users.map((u: any) => u._id.toString());
+
+      // Find books matching query
+      const books = await Book.find({
+        title: { $regex: query, $options: "i" }
+      }).select("_id");
+      bookIds = books.map((b: any) => b._id.toString());
+
+      // Add $or to filter if any matches found
+      filter.$or = [];
+      if (userIds.length > 0) {
+        filter.$or.push({ userId: { $in: userIds } });
+      }
+      if (bookIds.length > 0) {
+        filter.$or.push({ bookId: { $in: bookIds } });
+      }
+      // If no matches, force empty result
+      if (filter.$or.length === 0) {
+        filter.$or.push({ _id: null });
+      }
+    }
     
     // Execute query with pagination
     const totalBorrowings = await Borrowing.countDocuments(filter);

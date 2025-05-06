@@ -7,6 +7,8 @@ import './Borrowing';
 import './FineSettings';
 import './FinePayment';
 import './Reservation';
+import './Course';
+import './AcademicResource';
 
 // Export a dummy function to ensure this file is executed
 export function registerModels() {
