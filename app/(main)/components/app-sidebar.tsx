@@ -93,7 +93,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             ...item,
             items: [
               { title: "Browse Resources", url: "/academic-resources" },
-              { title: "Upload Resource", url: "/academic-resources/add" }
+              { title: "Upload Resource", url: "/admin/academic-resources/add" }
             ]
           };
         }
