@@ -22,7 +22,8 @@ import { ResourceCard } from "./components/resource-card";
 import { Pagination } from "@/components/ui/pagination";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function AcademicResourcesPage() {
+// Create a client component for search params
+function AcademicResourcesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -145,113 +146,113 @@ export default function AcademicResourcesPage() {
       </div>
 
       {/* Filters */}
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle>Search & Filter</CardTitle>
-        <CardDescription>
-        Find resources by course, type, or keyword
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Search */}
-        <div className="flex items-center">
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-            placeholder="Search resources..."
-            value={query}
-            onChange={(e) => updateFilters({ query: e.target.value || null })}
-            className="w-full pl-10"
-            />
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle>Search & Filter</CardTitle>
+          <CardDescription>
+            Find resources by course, type, or keyword
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {/* Search */}
+            <div className="flex items-center">
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search resources..."
+                  value={query}
+                  onChange={(e) => updateFilters({ query: e.target.value || null })}
+                  className="w-full pl-10"
+                />
+              </div>
+            </div>
+
+            {/* Course filter */}
+            <div className="flex-1">
+              <Select
+                value={courseId}
+                onValueChange={(value) => updateFilters({ courseId: value || null })}
+              >
+                <SelectTrigger className="w-full">
+                  <Book className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <SelectValue placeholder="All Courses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Courses</SelectItem>
+                  {courses.map((course) => (
+                    <SelectItem key={course._id} value={course._id}>
+                      {course.code} - {course.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Resource type filter */}
+            <div className="flex-1">
+              <Select
+                value={resourceType}
+                onValueChange={(value) => updateFilters({ resourceType: value || null })}
+              >
+                <SelectTrigger className="w-full">
+                  <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  {resourceTypes.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Year filter */}
+            <div className="flex-1">
+              <Select
+                value={year}
+                onValueChange={(value) => updateFilters({ year: value || null })}
+              >
+                <SelectTrigger className="w-full">
+                  <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <SelectValue placeholder="All Years" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Years</SelectItem>
+                  {years.map((y) => (
+                    <SelectItem key={y} value={y.toString()}>
+                      {y}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        </div>
-
-        {/* Course filter */}
-        <div className="flex-1">
-          <Select
-            value={courseId}
-            onValueChange={(value) => updateFilters({ courseId: value || null })}
-          >
-            <SelectTrigger className="w-full">
-            <Book className="mr-2 h-4 w-4 text-muted-foreground" />
-            <SelectValue placeholder="All Courses" />
-            </SelectTrigger>
-            <SelectContent>
-            <SelectItem value="all">All Courses</SelectItem>
-            {courses.map((course) => (
-              <SelectItem key={course._id} value={course._id}>
-                {course.code} - {course.name}
-              </SelectItem>
-            ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Resource type filter */}
-        <div className="flex-1">
-          <Select
-            value={resourceType}
-            onValueChange={(value) => updateFilters({ resourceType: value || null })}
-          >
-            <SelectTrigger className="w-full">
-            <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
-            <SelectValue placeholder="All Types" />
-            </SelectTrigger>
-            <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            {resourceTypes.map((type) => (
-              <SelectItem key={type.value} value={type.value}>
-                {type.label}
-              </SelectItem>
-            ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Year filter */}
-        <div className="flex-1">
-          <Select
-            value={year}
-            onValueChange={(value) => updateFilters({ year: value || null })}
-          >
-            <SelectTrigger className="w-full">
-            <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
-            <SelectValue placeholder="All Years" />
-            </SelectTrigger>
-            <SelectContent>
-            <SelectItem value="all">All Years</SelectItem>
-            {years.map((y) => (
-              <SelectItem key={y} value={y.toString()}>
-                {y}
-              </SelectItem>
-            ))}
-            </SelectContent>
-          </Select>
-        </div>
-        </div>
-        
-        <div className="flex justify-end mt-4">
-        <Button
-          variant="outline"
-          onClick={() => {
-            // Clear all filters
-            updateFilters({
-            query: null,
-            courseId: null,
-            resourceType: null,
-            year: null,
-            page: null,
-            });
-          }}
-          className="flex items-center gap-2"
-        >
-          <Filter className="h-4 w-4" />
-          Reset Filters
-        </Button>
-        </div>
-      </CardContent>
-    </Card>
+          
+          <div className="flex justify-end mt-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                // Clear all filters
+                updateFilters({
+                  query: null,
+                  courseId: null,
+                  resourceType: null,
+                  year: null,
+                  page: null,
+                });
+              }}
+              className="flex items-center gap-2"
+            >
+              <Filter className="h-4 w-4" />
+              Reset Filters
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Results grid */}
       {loading ? (
@@ -291,5 +292,28 @@ export default function AcademicResourcesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// Main component with Suspense boundary
+export default function AcademicResourcesPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="container p-8 space-y-6">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold tracking-tight">Academic Resources</h1>
+          <p className="text-muted-foreground">Loading resources...</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-pulse">
+          {[...Array(8)].map((_, index) => (
+            <Card key={index} className="h-64">
+              <CardContent className="p-0"></CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    }>
+      <AcademicResourcesContent />
+    </React.Suspense>
   );
 }

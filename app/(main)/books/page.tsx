@@ -15,7 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { BookCard } from "./components/book-card";
 import { toast } from "sonner";
 
-export default function BooksPage() {
+// Separate client component for search params
+function BooksContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [books, setBooks] = React.useState<any[]>([]);
@@ -305,5 +306,44 @@ export default function BooksPage() {
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+// Main component with Suspense boundary
+export default function BooksPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="flex flex-col gap-6 p-6">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold tracking-tight">Library Collection</h1>
+          <p className="text-muted-foreground">
+            Loading books...
+          </p>
+        </div>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle>Books Catalog</CardTitle>
+            <CardDescription>Loading books...</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="space-y-3">
+                  <Skeleton className="h-[200px] w-full rounded-lg" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                  <div className="flex justify-between">
+                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-6 w-20" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <BooksContent />
+    </React.Suspense>
   );
 }
