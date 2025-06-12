@@ -30,8 +30,21 @@ export async function middleware(request: NextRequest) {
   }
   
   // Role-based access control for admin routes
-  if (token && request.nextUrl.pathname.startsWith("/admin") && token.role !== "Admin") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  if (token && request.nextUrl.pathname.startsWith("/admin")) {
+    const role = token.role as string;
+    
+    // Allow lecturers to access specific academic resource pages
+    if (role === "Lecturer" && (
+      pathname.startsWith("/admin/academic-resources/add") || 
+      pathname.startsWith("/admin/academic-resources/edit")
+    )) {
+      return NextResponse.next();
+    }
+    
+    // Redirect non-admin users from other admin routes
+    if (role !== "Admin") {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
   }
   
   // Role-based access control for main routes (redirect admin to admin dashboard)
